@@ -7,9 +7,9 @@ const Navabar = () => {
     <nav className="w-full relative z-10">
       <div className="max-w mx-auto px-6 py-3 flex items-center justify-between
                      backdrop-blur-sm rounded-b-md">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ">
           <Ghost className="h-6 w-6 text-gray-800" />
-          <span className="text-lg font-semibold text-gray-800">Lokup</span>
+          <span className="text-xl font-semibold text-gray-800 ">Zengo</span>
         </div>
 
         <div className="text-sm text-gray-600 pr-5">
