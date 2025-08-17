@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
 const NetworkCards = () => {
@@ -24,13 +24,7 @@ const NetworkCards = () => {
   ]
 
 
-interface Network {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    bgColor: string;
-}
+
 
 const handleCardClick = (networkId: string): void => {
     router.push(`/Wallet/generate?chain=${networkId}`);
@@ -49,9 +43,11 @@ const handleCardClick = (networkId: string): void => {
           `}
         >
           <div className='flex items-start gap-4'>
-            <img 
+            <Image 
               src={network.icon} 
               alt={`${network.name} logo`}
+              width={32}
+              height={32}
               className='w-8 h-8'
             />
             <div className='flex-1'>

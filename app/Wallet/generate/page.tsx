@@ -1,12 +1,12 @@
 "use client";
 import { Key } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Navabar from "../../../components/Navbar";
 import { generateWallet } from "../../../lib/mnemonic";
 
 
-const WalletPage = () => {
+const WalletPageContent = () => {
   const [seedPhrase, setSeedPhrase] = useState("");
   const chain = useSearchParams().get("chain");
   const router = useRouter();
@@ -18,7 +18,7 @@ const WalletPage = () => {
     }
     try {
       // Derive index 0 with provided or new mnemonic to capture the phrase
-      const first = generateWallet(chain, seedPhrase || undefined, 0);
+      const first = generateWallet(chain as 'solana' | 'ethereum', seedPhrase || undefined, 0);
 
       // Save only what's needed for the display page
       localStorage.setItem(
@@ -28,7 +28,7 @@ const WalletPage = () => {
 
       // Go to display page
       router.push("/Wallet/display");
-    } catch (e) {
+    } catch {
       alert("Failed to generate wallet");
     }
   };
@@ -85,6 +85,14 @@ const WalletPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const WalletPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <WalletPageContent />
+    </Suspense>
   );
 };
 
