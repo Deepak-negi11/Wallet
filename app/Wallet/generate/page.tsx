@@ -1,9 +1,9 @@
 "use client";
-import React, { useState } from "react";
-import Navabar from "../../../components/Navbar";
 import { Key } from "lucide-react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { generateWallet } from "../../../lib/mnemonic";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import Navabar from "../../../components/Navbar";
+import { generateWallet, type SupportedChain } from "../../../lib/mnemonic";
 
 
 const WalletPage = () => {
@@ -18,7 +18,7 @@ const WalletPage = () => {
     }
     try {
       // Derive index 0 with provided or new mnemonic to capture the phrase
-      const first = generateWallet(chain as 'solana' | 'ethereum', seedPhrase || undefined, 0);
+      const first = generateWallet(chain as SupportedChain, seedPhrase || undefined, 0);
 
       // Save only what's needed for the display page
       localStorage.setItem(
@@ -28,8 +28,8 @@ const WalletPage = () => {
 
       // Go to display page
       router.push("/Wallet/display");
-    } catch (e: any) {
-      alert(e?.message || "Failed to generate wallet");
+    } catch (e) {
+      alert("Failed to generate wallet");
     }
   };
 

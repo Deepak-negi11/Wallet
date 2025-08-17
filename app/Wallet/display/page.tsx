@@ -1,17 +1,17 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
-import Navabar from "../../../components/Navbar";
-import { useRouter } from "next/navigation";
-import { generateWallet, type SupportedChain } from "../../../lib/mnemonic";
 import {
-  Eye,
-  EyeOff,
-  Clipboard,
-  Trash2,
   ChevronDown,
   ChevronUp,
+  Clipboard,
+  Eye,
+  EyeOff,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import Navabar from "../../../components/Navbar";
+import { generateWallet, type SupportedChain } from "../../../lib/mnemonic";
 
 type Session = {
   chain: SupportedChain;
@@ -96,7 +96,7 @@ export default function DisplayPage() {
     const rows = wallets
       .map((w, i) => {
         const addr = w.chain === "solana" ? w.publicKey : w.address;
-        const path: string = (w as any).path ?? "";
+        const path: string = w.path ?? "";
         return `${i},${w.chain},${addr},${path}`;
       })
       .join("\n");
@@ -139,7 +139,6 @@ export default function DisplayPage() {
     );
   }
 
-  const title = `${session.chain[0].toUpperCase() + session.chain.slice(1)} Wallet`;
   const walletCountLabel = count === 1 ? "1 wallet generated" : `${count} wallets generated`;
 
   return (
@@ -273,7 +272,7 @@ export default function DisplayPage() {
 
               return (
                 <div
-                  key={`${w.chain}-${i}-${(w as any).path}`}
+                  key={`${w.chain}-${i}-${w.path}`}
                   className="bg-white rounded-xl border border-gray-200 shadow-sm p-4"
                 >
                  
