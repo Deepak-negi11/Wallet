@@ -3,7 +3,7 @@ import { Key } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Navabar from "../../../components/Navbar";
-import { generateWallet, type SupportedChain } from "../../../lib/mnemonic";
+import { generateWallet } from "../../../lib/mnemonic";
 
 
 const WalletPage = () => {
@@ -12,13 +12,13 @@ const WalletPage = () => {
   const router = useRouter();
 
   const onGenerate = () => {
-    if (!chain) {
-      alert("No chain selected");
+    if (!chain || (chain !== 'solana' && chain !== 'ethereum')) {
+      alert("No valid chain selected");
       return;
     }
     try {
       // Derive index 0 with provided or new mnemonic to capture the phrase
-      const first = generateWallet(chain as SupportedChain, seedPhrase || undefined, 0);
+      const first = generateWallet(chain, seedPhrase || undefined, 0);
 
       // Save only what's needed for the display page
       localStorage.setItem(

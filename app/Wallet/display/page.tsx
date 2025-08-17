@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Navabar from "../../../components/Navbar";
-import { generateWallet, type SupportedChain } from "../../../lib/mnemonic";
+import { generateWallet, type GeneratedWallet, type SupportedChain } from "../../../lib/mnemonic";
 
 type Session = {
   chain: SupportedChain;
@@ -66,7 +66,7 @@ export default function DisplayPage() {
   }, [count]);
 
   // Derive wallets deterministically from the same seed
-  const wallets = useMemo(() => {
+  const wallets = useMemo((): GeneratedWallet[] => {
     if (!session) return [];
     return Array.from({ length: count }, (_, i) =>
       generateWallet(session.chain, session.mnemonic, i)
