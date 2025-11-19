@@ -27,7 +27,6 @@ export type GeneratedWallet = SolanaWallet | EthereumWallet;
 
 function deriveSolana(mnemonic: string, index = 0): SolanaWallet {
   const seed = bip39.mnemonicToSeedSync(mnemonic);
-  // account index goes in the {index}' slot
   const path = `m/44'/501'/${index}'/0'`;
   const derivedSeed = derivePath(path, seed.toString('hex')).key;
   const keypair = Keypair.fromSeed(derivedSeed);
@@ -74,6 +73,5 @@ export function generateWallet(chain: SupportedChain, mnemonic?: string, index =
     : deriveEthereum(usedMnemonic, index);
 }
 
-// Optional helpers/back-compat
 export const handleMnemonic = generateWallet;
 export const createWalletForChain = generateWallet;

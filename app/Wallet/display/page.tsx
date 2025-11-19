@@ -6,12 +6,14 @@ import {
   Eye,
   EyeOff,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Navabar from "../../../components/Navbar";
 import { generateWallet, type GeneratedWallet, type SupportedChain } from "../../../lib/mnemonic";
+import { fetchBalance } from "../../../lib/balance";
 
 type Session = {
   chain: SupportedChain;
@@ -26,11 +28,10 @@ export default function DisplayPage() {
   const [showSecret, setShowSecret] = useState<Record<number, boolean>>({});
   const [showMnemonic, setShowMnemonic] = useState(false);
   const [phraseOpen, setPhraseOpen] = useState(true);
+  const [balances, setBalances] = useState<Record<number, { balance: string; isLoading: boolean; error?: string }>>({});
 
-  // small copy feedback
   const [copied, setCopied] = useState<string | boolean>(false);
 
-  // Load session (chain + mnemonic)
   useEffect(() => {
     try {
       const raw = localStorage.getItem("walletSession");
@@ -40,7 +41,6 @@ export default function DisplayPage() {
     } catch {}
   }, []);
 
-  // Load persisted wallet count (optional convenience)
   useEffect(() => {
     if (!session) return;
     try {
@@ -49,29 +49,62 @@ export default function DisplayPage() {
         const n = Number(saved);
         if (!Number.isNaN(n) && n >= 0) setCount(n);
       } else {
-        setCount(1); // default one wallet
+        setCount(1);
       }
     } catch {
       setCount(1);
     }
-    // reset secrets whenever session changes
     setShowSecret({});
   }, [session]);
 
-  // Persist count on change
   useEffect(() => {
     try {
       localStorage.setItem("walletCount", String(count));
     } catch {}
   }, [count]);
 
-  // Derive wallets deterministically from the same seed
   const wallets = useMemo((): GeneratedWallet[] => {
     if (!session) return [];
     return Array.from({ length: count }, (_, i) =>
       generateWallet(session.chain, session.mnemonic, i)
     );
   }, [session, count]);
+
+  // Fetch balances for all wallets
+  const fetchAllBalances = async () => {
+    if (!wallets.length) return;
+    
+    // Set all to loading
+    const loadingState: Record<number, { balance: string; isLoading: boolean }> = {};
+    wallets.forEach((_, i) => {
+      loadingState[i] = { balance: "0", isLoading: true };
+    });
+    setBalances(loadingState);
+
+    // Fetch each balance
+    for (let i = 0; i < wallets.length; i++) {
+      const wallet = wallets[i];
+      const address = wallet.chain === "solana" ? wallet.publicKey : wallet.address;
+      
+      const result = await fetchBalance(wallet.chain, address);
+      
+      setBalances((prev) => ({
+        ...prev,
+        [i]: {
+          balance: result.balance,
+          isLoading: false,
+          error: result.error,
+        },
+      }));
+    }
+  };
+
+  // Auto-fetch balances when wallets change
+  useEffect(() => {
+    if (wallets.length > 0) {
+      fetchAllBalances();
+    }
+  }, [wallets.length]);
 
   const copy = async (label: string, value: string) => {
     try {
@@ -225,6 +258,14 @@ export default function DisplayPage() {
             </div>
             <div className="flex items-center gap-3">
               <button
+                onClick={fetchAllBalances}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-700 hover:opacity-80 text-white rounded-md text-sm items-center shadow-sm flex gap-2"
+                title="Refresh all balances"
+              >
+                <RefreshCw size={16} />
+                Refresh Balances
+              </button>
+              <button
                 onClick={() => setCount((c) => c + 1)}
                 className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 hover:opacity-80 text-white rounded-md hover:bg-blue-700 text-sm items-center shadow-sm"
               >
@@ -234,6 +275,7 @@ export default function DisplayPage() {
                 onClick={() => {
                   setCount(0);
                   setShowSecret({});
+                  setBalances({});
                 }}
                 className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors text-sm"
               >
@@ -269,6 +311,14 @@ export default function DisplayPage() {
 
               const iconSrc = isSol ? "/solana.svg" : "/ethereum.png"; 
               const chainLabel = isSol ? "Solana" : "Ethereum";
+              const currencySymbol = isSol ? "SOL" : "ETH";
+              
+              const balanceInfo = balances[i];
+              const displayBalance = balanceInfo?.isLoading 
+                ? "Loading..." 
+                : balanceInfo?.balance 
+                  ? `${balanceInfo.balance} ${currencySymbol}` 
+                  : `0.0000 ${currencySymbol}`;
 
               return (
                 <div
@@ -277,7 +327,7 @@ export default function DisplayPage() {
                 >
                  
                   <div className="flex items-start justify-between mb-3">
-                    <div>
+                    <div className="flex-1">
                       <div className="flex items-center gap-2">
                  
                         <Image
@@ -292,6 +342,17 @@ export default function DisplayPage() {
                         </span>
                       </div>
                       <div className="text-xs text-gray-500 mt-1">{chainLabel}</div>
+                      
+                      {/* Balance Display */}
+                      <div className="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
+                        <div className="text-xs text-gray-600 mb-1">Balance</div>
+                        <div className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                          {balanceInfo?.isLoading && (
+                            <RefreshCw size={14} className="animate-spin text-blue-500" />
+                          )}
+                          {displayBalance}
+                        </div>
+                      </div>
                     </div>
                     <button
                       onClick={() => setCount((c) => Math.max(0, c - 1))}

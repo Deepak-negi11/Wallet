@@ -17,16 +17,13 @@ const WalletPageContent = () => {
       return;
     }
     try {
-      // Derive index 0 with provided or new mnemonic to capture the phrase
       const first = generateWallet(chain as 'solana' | 'ethereum', seedPhrase || undefined, 0);
 
-      // Save only what's needed for the display page
       localStorage.setItem(
         "walletSession",
         JSON.stringify({ chain: first.chain, mnemonic: first.mnemonic })
       );
 
-      // Go to display page
       router.push("/Wallet/display");
     } catch {
       alert("Failed to generate wallet");
